@@ -4,6 +4,7 @@ import { button, useControls } from 'leva'
 import { Perf } from 'r3f-perf'
 import { useRef } from 'react'
 import Planets from './components/planets'
+import Galaxy from './components/galaxy'
 
 
 export default function Experience() {
@@ -43,7 +44,7 @@ export default function Experience() {
             <sphereGeometry />
             <meshStandardMaterial />
         </mesh> */}
-
+        {/* <Galaxy /> */}
         <Planets />
 
         {/* <mesh ref={cube} position-x={2} >
