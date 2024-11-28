@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { Canvas } from '@react-three/fiber'
 import { StrictMode } from 'react'
 import Experience from './Experience.jsx'
-
+import ControlsPanel from './components/Controls.jsx'
 
 const root = ReactDOM.createRoot(document.querySelector('#root'))
 
@@ -20,7 +20,8 @@ root.render(
         >
 
             <Experience />
-        </Canvas>
 
+        </Canvas>
+        {/* <ControlsPanel /> */}
     </StrictMode>
 )

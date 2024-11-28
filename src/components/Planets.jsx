@@ -1,15 +1,14 @@
 import { useFrame, useThree } from "@react-three/fiber"
-import { useRef, useState } from "react"
-import { useControls, button } from "leva"
+import { useEffect, useRef, useState } from "react"
+import { useControls, button, Leva } from "leva"
 import * as THREE from 'three'
 import { gsap } from "gsap"
 import planetInfo from '../../public/data/planets.json'
 
 
-
 let currentPlanet = null
 let cameraPosition = null
-let pausePlay = true
+let pausePlay = false
 const infoCard = document.getElementById('planet-info')
 // createPlanet(0.2, 1, 0.025, './textures/matcaps/mercury.jpg') // Mercury
 // createPlanet(0.3, 3,  0.018, './textures/matcaps/venus.jpg'),  // Venus
@@ -116,12 +115,10 @@ export default function Planets() {
             duration: 2,
             ease: "power3.inOut",
             onUpdate: () => {
-                // Continuously update camera to look at the planet
                 camera.lookAt(targetPosition);
             },
             onComplete: () => {
-                console.log("Camera animation complete!");
-                camera.lookAt(targetPosition); // Ensure it locks onto the final target
+                camera.lookAt(targetPosition);
                 activePlanet = sun.current.position.clone()
                 pausePlay = true
             },
@@ -162,7 +159,7 @@ export default function Planets() {
         })
     }
 
-    useControls({
+    const controls = useControls({
         Back: button((e) => {
             resetPlanet()
         }),
@@ -195,6 +192,16 @@ export default function Planets() {
 
         })
     })
+
+    const controlsContainer = document.querySelector('.controls-container')
+    console.log(controlsContainer);
+
+    planetInfo.forEach((planet, i) => {
+        controlsContainer.innerHTML += `<button onClick={}} class="control-btn">Move to ${planet.title}</button>`
+
+
+    })
+
 
 
     return (
