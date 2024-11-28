@@ -22,8 +22,8 @@ canvas {
     color: white;
     position: absolute;
     z-index: 100;
-    left: 10%;
-    top: 25%;
+    left: 5%;
+    top: 30%;
     background: #9f9f9f54;
     padding: 13px;
     max-width: 400px;
@@ -36,7 +36,7 @@ canvas {
 
     & p {
         margin-top: 10px;
-        font-size: 20px;
+        font-size: 18px;
     }
 }
 
