@@ -4,12 +4,12 @@ import { useControls, button } from "leva"
 import * as THREE from 'three'
 import { gsap } from "gsap"
 import planetInfo from '../../public/data/planets.json'
-console.log(planetInfo);
+
 
 
 let currentPlanet = null
 let cameraPosition = null
-let pausePlay = false
+let pausePlay = true
 const infoCard = document.getElementById('planet-info')
 // createPlanet(0.2, 1, 0.025, './textures/matcaps/mercury.jpg') // Mercury
 // createPlanet(0.3, 3,  0.018, './textures/matcaps/venus.jpg'),  // Venus
@@ -45,11 +45,10 @@ export default function Planets() {
     const sun = useRef()
     const invObj = useRef()
 
-    const [targetPosition, setTargetPosition] = useState(null)
-    const [activePlanet, setActivePlanet] = useState(null)
-    // const [pausePlay, setPausePlay] = useState(true)
 
-    // const [activeSun, setActiveSun] = useState(null)
+    // const [activePlanet, setActivePlanet] = useState(null)
+    let activePlanet = null
+
 
 
     useFrame(() => {
@@ -72,91 +71,99 @@ export default function Planets() {
 
         }
 
-        if (targetPosition) {
-            // Interpolate camera position toward the target, change the z value to get the camera further och closer to the target
-            camera.position.lerp(targetPosition.clone().add(new THREE.Vector3(0, 0, 4)), 0.03); // 0.03 the speed of the camera to move to the object
-
-            // Adjust camera to look at the target position
-
-            camera.lookAt(activePlanet);
-
-
-            // Stop animating once the camera is close enough to the target,  change the z value to get the camera further och closer to the target
-            if (camera.position.distanceTo(targetPosition.clone().add(new THREE.Vector3(0, 0, 4))) < 0.5) {
-
-
-                setActivePlanet(activePlanet) // Sets the active planet so the camera stays on that planet
-                setTargetPosition(null); // Clear target position to stop animation              
-                console.log(currentPlanet);
-                console.log(activePlanet);
-                // console.log(activeSun);
-
-                if (currentPlanet) {
-                    const planetInformation = planetInfo[currentPlanet]
-                    console.log(planetInformation);
-
-                    infoCard.innerHTML = `
-                        <h1>${planetInformation.title}</h1>
-                        <p>${planetInformation.info}</p>
-                    `
-                    infoCard.classList.add('show')
-                }
-            }
-        }
-
         if (activePlanet) {
             camera.lookAt(activePlanet)
         }
     });
 
-    function movePlanet(planetIndex) {
-        pausePlay = false
 
-        currentPlanet = planetIndex
+    function goCamera(targetPosition, offset) {
+
+        const finalPosition = targetPosition.clone().add(offset);
+
+        camera.lookAt(targetPosition)
+        gsap.to(camera.position, {
+            x: finalPosition.x,
+            y: finalPosition.y,
+            z: finalPosition.z,
+            duration: 2,
+            ease: "power3.inOut",
+            onUpdate: () => {
+                // Continuously update camera to look at the planet
+                camera.lookAt(targetPosition);
+            },
+            onComplete: () => {
+                console.log("Camera animation complete!");
+                camera.lookAt(targetPosition); // Ensure it locks onto the final target
+                const planetInformation = planetInfo[currentPlanet]
+                console.log(planetInformation);
+
+                infoCard.innerHTML = `
+                        <h1>${planetInformation.title}</h1>
+                        <p>${planetInformation.info}</p>
+                    `
+                infoCard.classList.add('show')
+            },
+        });
+    }
+
+    function backCamera(targetPosition) {
+        camera.lookAt(targetPosition)
+        gsap.to(camera.position, {
+            x: targetPosition.x,
+            y: targetPosition.y,
+            z: targetPosition.z,
+            duration: 2,
+            ease: "power3.inOut",
+            onUpdate: () => {
+                // Continuously update camera to look at the planet
+                camera.lookAt(targetPosition);
+            },
+            onComplete: () => {
+                console.log("Camera animation complete!");
+                camera.lookAt(targetPosition); // Ensure it locks onto the final target
+                activePlanet = sun.current.position.clone()
+                pausePlay = true
+            },
+        });
+    }
+
+
+    function movePlanet(planetIndex) {
+        const planetSize = planetsRefs[planetIndex].current.userData.size
+
+        const scaleFactor = 5; // Adjust this to control how large planets appear
+        const offset = new THREE.Vector3(0, 0, planetSize * scaleFactor);
 
         const planetPosition = planetsRefs[planetIndex].current.position
-        // setActivePlanet(planetPosition)
-        setActivePlanet(planetPosition)
+        pausePlay = false
+        activePlanet = planetPosition
+        currentPlanet = planetIndex
         gsap.to(planetPosition, {
             y: 6,
             onComplete: () => {
-                // console.log(activeSun);
-
-                setTargetPosition(planetsRefs[planetIndex].current.position.clone());
+                const target = planetsRefs[planetIndex].current.position.clone()
+                goCamera(target, offset)
             }
         })
-
     }
 
     function resetPlanet() {
 
         const planetPosition = planetsRefs[currentPlanet].current.position
-        // setActivePlanet(planetPosition)
-
 
         infoCard.classList.remove('show')
         gsap.to(planetPosition, {
             y: 0,
             onComplete: () => {
-                currentPlanet = null
-                setActivePlanet(sun.current.position.clone())
-                setTargetPosition(invObj.current.position.clone());
-                pausePlay = true
+                // setActivePlanet(sun.current.position.clone())
+                backCamera(invObj.current.position.clone());
             }
         })
     }
 
     useControls({
-        Pause: button((e) => {
-            pausePlay = false
-        }),
-        Play: button((e) => {
-            pausePlay = true
-        }),
-        MoveCamera: button((e) => {
-            setTargetPosition(sun.current.position.clone());
-        }),
-        MoveBack: button((e) => {
+        Back: button((e) => {
             resetPlanet()
         }),
         Mercury: button(() => {
@@ -182,27 +189,12 @@ export default function Planets() {
         }),
         Neptune: button(() => {
             movePlanet(7)
+        }),
+        camPos: button(() => {
+            console.log(camera.position);
+
         })
     })
-
-
-    // Update the orbit of each planet on every frame
-    // useFrame(() => {
-    //     planetsRefs.forEach((planetRef, index) => {
-    //         if (!planetRef.current) return
-
-    //         // Increment the orbit angle
-    //         const userData = planetRef.current.userData
-    //         userData.orbitAngle += userData.orbitSpeed
-
-    //         // Calculate the new position
-    //         const x = Math.cos(userData.orbitAngle) * userData.orbitRadius
-    //         const z = Math.sin(userData.orbitAngle) * userData.orbitRadius
-
-    //         // Update the position of the planet
-    //         planetRef.current.position.set(x, 0, z)
-    //     })
-    // })
 
 
     return (
@@ -213,7 +205,7 @@ export default function Planets() {
                 <meshStandardMaterial color="yellow" />
             </mesh>
 
-            <mesh ref={invObj} scale={0} position={[- 4, 3, 20]}>
+            <mesh ref={invObj} scale={0} position={[- 12, 14, 45]}>
                 <boxGeometry />
                 <meshBasicMaterial />
             </mesh>
@@ -228,7 +220,9 @@ export default function Planets() {
                         name: planet.color,
                         orbitRadius: planet.distanceFromSun,
                         orbitSpeed: planet.orbitSpeed,
-                        orbitAngle: 0 // Initial angle
+                        orbitAngle: 0, // Initial angle
+                        size: planet.size
+
                     }}
                 >
                     <sphereGeometry args={[planet.size, 16, 16]} />
