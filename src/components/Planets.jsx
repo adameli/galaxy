@@ -18,7 +18,9 @@ const infoCard = document.getElementById('planet-info')
 // createPlanet(1.2, 13,  0.007,'./textures/matcaps/saturn.jpg', true),  // Saturn
 // createPlanet(0.8, 16,  0.004,'./textures/matcaps/uranus.jpg'),  // Uranus
 // createPlanet(0.7, 18,  0.003, './textures/matcaps/neptune.jpg'),  // Neptune
-export default function Planets() {
+export default function Planets({ invObj }) {
+
+    console.log(invObj);
 
     // Define planets as an array of configurations
     const planetsConfig = [
@@ -42,7 +44,6 @@ export default function Planets() {
 
     // Sun ref
     const sun = useRef()
-    const invObj = useRef()
 
 
     // const [activePlanet, setActivePlanet] = useState(null)
@@ -127,6 +128,7 @@ export default function Planets() {
 
 
     function movePlanet(planetIndex) {
+        document.querySelectorAll('.control-btn').forEach(element => element.classList.toggle('display'))
         const planetSize = planetsRefs[planetIndex].current.userData.size
 
         const scaleFactor = 5; // Adjust this to control how large planets appear
@@ -146,7 +148,7 @@ export default function Planets() {
     }
 
     function resetPlanet() {
-
+        document.querySelectorAll('.control-btn').forEach(element => element.classList.toggle('display'))
         const planetPosition = planetsRefs[currentPlanet].current.position
 
         infoCard.classList.remove('show')
@@ -160,47 +162,37 @@ export default function Planets() {
     }
 
     const controls = useControls({
-        Back: button((e) => {
-            resetPlanet()
-        }),
-        Mercury: button(() => {
-            movePlanet(0)
-        }),
-        Venus: button(() => {
-            movePlanet(1)
-        }),
-        Earth: button(() => {
-            movePlanet(2)
-        }),
-        Mars: button(() => {
-            movePlanet(3)
-        }),
-        Jupiter: button(() => {
-            movePlanet(4)
-        }),
-        Saturn: button(() => {
-            movePlanet(5)
-        }),
-        Uranus: button(() => {
-            movePlanet(6)
-        }),
-        Neptune: button(() => {
-            movePlanet(7)
-        }),
-        camPos: button(() => {
+        camPos: button((e) => {
             console.log(camera.position);
 
         })
     })
 
     const controlsContainer = document.querySelector('.controls-container')
+    controlsContainer.innerHTML = null
     console.log(controlsContainer);
 
-    planetInfo.forEach((planet, i) => {
-        controlsContainer.innerHTML += `<button onClick={}} class="control-btn">Move to ${planet.title}</button>`
+    createControlBtn('back', 'Back')
+    planetInfo.forEach((planet, i) => createControlBtn('planet', planet.title, i))
 
+    function createControlBtn(type, title, i) {
+        const btn = document.createElement('button')
+        btn.classList.add('control-btn')
 
-    })
+        switch (type) {
+            case 'planet':
+                btn.addEventListener('click', () => movePlanet(i))
+                btn.classList.add('display')
+                btn.textContent = `Move to ${title}`
+                break;
+            case 'back':
+                btn.addEventListener('click', () => resetPlanet())
+                btn.textContent = `${title}`
+                break;
+        }
+
+        controlsContainer.append(btn)
+    }
 
 
 
@@ -212,10 +204,10 @@ export default function Planets() {
                 <meshStandardMaterial color="yellow" />
             </mesh>
 
-            <mesh ref={invObj} scale={0} position={[- 12, 14, 45]}>
+            {/* <mesh ref={invObj} scale={0} position={[- 12, 14, 45]}>
                 <boxGeometry />
                 <meshBasicMaterial />
-            </mesh>
+            </mesh> */}
 
             {/* Planets */}
             {planetsConfig.map((planet, index) => (

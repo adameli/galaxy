@@ -1,7 +1,11 @@
 import { Point, Points } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
 import * as THREE from 'three'
 
+
+
 function Particles() {
+    const starTexture = useLoader(THREE.TextureLoader, 'textures/star.png')
     const count = 10000
     const positions = new Float32Array(count * 3)
     const colors = new Float32Array(count * 3)
@@ -13,9 +17,9 @@ function Particles() {
 
         const i3 = i * 3
 
-        const radius = Math.random() * 5
+        const radius = Math.random() * 6
         const spinAngle = radius * 1
-        const angleBranch = (i % 3) / 3 * Math.PI * 2
+        const angleBranch = (i % 4) / 4 * Math.PI * 2
 
         const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)
         const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)
@@ -36,7 +40,7 @@ function Particles() {
     }
 
     return (
-        <points scale={10}>
+        <points scale={20}>
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
@@ -56,6 +60,8 @@ function Particles() {
                 sizeAttenuation
                 depthWrite={false}
                 vertexColors
+                transparent
+                alphaTest={0.9}
 
             />
         </points>
