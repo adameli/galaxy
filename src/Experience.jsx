@@ -4,8 +4,8 @@ import { button, Leva, useControls } from 'leva'
 import { Perf } from 'r3f-perf'
 import { useRef } from 'react'
 import * as THREE from 'three'
-import Planets from './components/planets'
-import Galaxy from './components/galaxy'
+import Planets from '/components/Planets.jsx'
+import Galaxy from '/components/Galaxy.jsx'
 
 
 export default function Experience() {
@@ -18,7 +18,6 @@ export default function Experience() {
     starTexture.repeat.set(4, 4)
 
     return <>
-        <Perf position='top-left' />
         <OrbitControls
             makeDefault
             minDistance={5} // Minimum zoom level (closer to the target)
@@ -38,7 +37,7 @@ export default function Experience() {
             <meshBasicMaterial />
         </mesh>
 
-        {/* <Galaxy /> */}
+        <Galaxy />
         <Planets invObj={invObj} />
     </>
 }

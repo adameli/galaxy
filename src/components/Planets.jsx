@@ -4,21 +4,14 @@ import { useControls, button, Leva } from "leva"
 import * as THREE from 'three'
 import { gsap } from "gsap"
 import planetInfo from '../../public/data/planets.json'
-import { Environment } from "@react-three/drei"
+
 
 
 let currentPlanet = null
 let spin = null
-let pausePlay = false
+let pausePlay = true
 const infoCard = document.getElementById('planet-info')
-// createPlanet(0.2, 1, 0.025, './textures/matcaps/mercury.jpg') // Mercury
-// createPlanet(0.3, 3,  0.018, './textures/matcaps/venus.jpg'),  // Venus
-// createPlanet(0.35, 5,  0.015,'./textures/matcaps/earth.jpg'),  // Earth
-// createPlanet(0.2, 7,  0.013, './textures/matcaps/mars.jpg'),  // Mars
-// createPlanet(1, 9,  0.009,'./textures/matcaps/jupiter.jpg'),  // Jupiter
-// createPlanet(1.2, 13,  0.007,'./textures/matcaps/saturn.jpg', true),  // Saturn
-// createPlanet(0.8, 16,  0.004,'./textures/matcaps/uranus.jpg'),  // Uranus
-// createPlanet(0.7, 18,  0.003, './textures/matcaps/neptune.jpg'),  // Neptune
+
 export default function Planets({ invObj }) {
 
     // Define planets as an array of configurations
@@ -166,12 +159,7 @@ export default function Planets({ invObj }) {
         })
     }
 
-    const controls = useControls({
-        camPos: button((e) => {
-            console.log(camera.position);
 
-        })
-    })
 
     const controlsContainer = document.querySelector('.controls-container')
     controlsContainer.innerHTML = null
