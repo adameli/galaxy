@@ -1,13 +1,14 @@
-import { useFrame, useThree } from "@react-three/fiber"
+import { useFrame, useLoader, useThree } from "@react-three/fiber"
 import { useEffect, useRef, useState } from "react"
 import { useControls, button, Leva } from "leva"
 import * as THREE from 'three'
 import { gsap } from "gsap"
 import planetInfo from '../../public/data/planets.json'
+import { Environment } from "@react-three/drei"
 
 
 let currentPlanet = null
-let cameraPosition = null
+let spin = null
 let pausePlay = false
 const infoCard = document.getElementById('planet-info')
 // createPlanet(0.2, 1, 0.025, './textures/matcaps/mercury.jpg') // Mercury
@@ -20,18 +21,16 @@ const infoCard = document.getElementById('planet-info')
 // createPlanet(0.7, 18,  0.003, './textures/matcaps/neptune.jpg'),  // Neptune
 export default function Planets({ invObj }) {
 
-    console.log(invObj);
-
     // Define planets as an array of configurations
     const planetsConfig = [
-        { size: 0.2, distanceFromSun: 2, orbitSpeed: 0.025, color: 'orange' }, //Mercury
-        { size: 0.3, distanceFromSun: 4, orbitSpeed: 0.018, color: 'pink' }, // Venus
-        { size: 0.35, distanceFromSun: 5, orbitSpeed: 0.015, color: 'red' }, //Earth
-        { size: 0.2, distanceFromSun: 7, orbitSpeed: 0.013, color: 'skyblue' }, //Mars
-        { size: 1, distanceFromSun: 9, orbitSpeed: 0.009, color: 'salmon' }, //Jupiter
-        { size: 1.2, distanceFromSun: 13, orbitSpeed: 0.007, color: 'green' }, //Saturn
-        { size: 0.8, distanceFromSun: 16, orbitSpeed: 0.004, color: 'gold' }, //Uranus
-        { size: 0.7, distanceFromSun: 18, orbitSpeed: 0.003, color: 'mediumPurple' }, //Neptune
+        { size: 0.2, distanceFromSun: 2, orbitSpeed: 0.025, texture: 'textures/planet_textures/2k_mercury.jpg' }, //Mercury
+        { size: 0.3, distanceFromSun: 4, orbitSpeed: 0.018, texture: 'textures/planet_textures/2k_venus_surface.jpg' }, // Venus
+        { size: 0.35, distanceFromSun: 5, orbitSpeed: 0.015, texture: 'textures/planet_textures/2k_earth_daymap.jpg' }, //Earth
+        { size: 0.2, distanceFromSun: 7, orbitSpeed: 0.013, texture: 'textures/planet_textures/2k_mars.jpg' }, //Mars
+        { size: 1, distanceFromSun: 9, orbitSpeed: 0.009, texture: 'textures/planet_textures/2k_jupiter.jpg' }, //Jupiter
+        { size: 1.2, distanceFromSun: 13, orbitSpeed: 0.007, texture: 'textures/planet_textures/2k_saturn.jpg' }, //Saturn
+        { size: 0.8, distanceFromSun: 16, orbitSpeed: 0.004, texture: 'textures/planet_textures/2k_uranus.jpg' }, //Uranus
+        { size: 0.7, distanceFromSun: 18, orbitSpeed: 0.003, texture: 'textures/planet_textures/2k_neptune.jpg' }, //Neptune
     ]
 
 
@@ -40,7 +39,7 @@ export default function Planets({ invObj }) {
 
     //Camera
     const camera = useThree(state => state.camera)
-    cameraPosition = camera.position
+
 
     // Sun ref
     const sun = useRef()
@@ -51,7 +50,7 @@ export default function Planets({ invObj }) {
 
 
 
-    useFrame(() => {
+    useFrame((state, delta) => {
 
         if (pausePlay) {
             planetsRefs.forEach((planetRef, index) => {
@@ -73,6 +72,10 @@ export default function Planets({ invObj }) {
 
         if (activePlanet) {
             camera.lookAt(activePlanet)
+        }
+
+        if (spin) {
+            spin.rotation.y += delta * 0.2
         }
     });
 
@@ -109,6 +112,7 @@ export default function Planets({ invObj }) {
 
     function backCamera(targetPosition) {
         camera.lookAt(targetPosition)
+        spin = null
         gsap.to(camera.position, {
             x: targetPosition.x,
             y: targetPosition.y,
@@ -142,6 +146,7 @@ export default function Planets({ invObj }) {
             y: 6,
             onComplete: () => {
                 const target = planetsRefs[planetIndex].current.position.clone()
+                spin = planetsRefs[planetIndex].current
                 goCamera(target, offset)
             }
         })
@@ -170,7 +175,6 @@ export default function Planets({ invObj }) {
 
     const controlsContainer = document.querySelector('.controls-container')
     controlsContainer.innerHTML = null
-    console.log(controlsContainer);
 
     createControlBtn('back', 'Back')
     planetInfo.forEach((planet, i) => createControlBtn('planet', planet.title, i))
@@ -183,7 +187,7 @@ export default function Planets({ invObj }) {
             case 'planet':
                 btn.addEventListener('click', () => movePlanet(i))
                 btn.classList.add('display')
-                btn.textContent = `Move to ${title}`
+                btn.textContent = `${title}`
                 break;
             case 'back':
                 btn.addEventListener('click', () => resetPlanet())
@@ -195,49 +199,46 @@ export default function Planets({ invObj }) {
     }
 
 
+    const sunTexture = useLoader(THREE.TextureLoader, 'textures/planet_textures/2k_sun.jpg')
 
     return (
         <>
+
             {/* Sun */}
             <mesh ref={sun} position={[0, 0, 0]}>
                 <sphereGeometry />
-                <meshStandardMaterial color="yellow" />
+                <meshStandardMaterial map={sunTexture} />
             </mesh>
 
-            {/* <mesh ref={invObj} scale={0} position={[- 12, 14, 45]}>
-                <boxGeometry />
-                <meshBasicMaterial />
+            {/* <mesh position={[- 5, 0, 0]}>
+                <sphereGeometry />
+                <meshStandardMaterial />
             </mesh> */}
 
             {/* Planets */}
-            {planetsConfig.map((planet, index) => (
-                <mesh
-                    key={index}
-                    ref={planetsRefs[index]}
-                    position={[planet.distanceFromSun, 0, 0]}
-                    userData={{
-                        name: planet.color,
-                        orbitRadius: planet.distanceFromSun,
-                        orbitSpeed: planet.orbitSpeed,
-                        orbitAngle: 0, // Initial angle
-                        size: planet.size
+            {planetsConfig.map((planet, index) => {
 
-                    }}
-                >
-                    <sphereGeometry args={[planet.size, 16, 16]} />
-                    <meshStandardMaterial color={planet.color} />
-                </mesh>
-            ))}
+                const planetTexture = useLoader(THREE.TextureLoader, planet.texture);
+                return (
+                    <mesh
+                        key={index}
+                        ref={planetsRefs[index]}
+                        position={[planet.distanceFromSun + 2, 0, 0]}
+                        userData={{
+                            name: planet.color,
+                            orbitRadius: planet.distanceFromSun,
+                            orbitSpeed: planet.orbitSpeed,
+                            orbitAngle: 0, // Initial angle
+                            size: planet.size
+
+                        }}
+                    >
+                        <sphereGeometry args={[planet.size, 32, 32]} />
+                        <meshStandardMaterial map={planetTexture} />
+                    </mesh>
+                )
+            })}
         </>
     )
 }
 
-
-// createPlanet(0.2, 1, 0.025, './textures/matcaps/mercury.jpg') // Mercury
-// createPlanet(0.3, 3,  0.018, './textures/matcaps/venus.jpg'),  // Venus
-// createPlanet(0.35, 5,  0.015,'./textures/matcaps/earth.jpg'),  // Earth
-// createPlanet(0.2, 7,  0.013, './textures/matcaps/mars.jpg'),  // Mars
-// createPlanet(1, 9,  0.009,'./textures/matcaps/jupiter.jpg'),  // Jupiter
-// createPlanet(1.2, 13,  0.007,'./textures/matcaps/saturn.jpg', true),  // Saturn
-// createPlanet(0.8, 16,  0.004,'./textures/matcaps/uranus.jpg'),  // Uranus
-// createPlanet(0.7, 18,  0.003, './textures/matcaps/neptune.jpg'),  // Neptune

@@ -1,8 +1,17 @@
 import { Point, Points } from "@react-three/drei";
-import { useLoader } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { useRef } from "react";
 import * as THREE from 'three'
 
-
+function BlackPlane() {
+    return (
+        <mesh position={[0, 29, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            {/* Circle geometry with a large radius */}
+            <circleGeometry args={[50, 64]} />
+            <meshBasicMaterial color="black" />
+        </mesh>
+    );
+}
 
 function Particles() {
     const starTexture = useLoader(THREE.TextureLoader, 'textures/star.png')
@@ -17,9 +26,9 @@ function Particles() {
 
         const i3 = i * 3
 
-        const radius = Math.random() * 6
+        const radius = Math.random() * 5
         const spinAngle = radius * 1
-        const angleBranch = (i % 4) / 4 * Math.PI * 2
+        const angleBranch = (i % 3) / 3 * Math.PI * 2
 
         const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)
         const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1)
@@ -39,8 +48,16 @@ function Particles() {
         colors[i3 + 2] = mixedColor.b
     }
 
+    const points = useRef()
+    console.log(points);
+
+    useFrame((state, delta) => {
+        // points.rotation.x += delta * 0.2
+    })
+
     return (
-        <points scale={20}>
+
+        <points ref={points} position={[-5, 40, 15]} scale={10}>
             <bufferGeometry>
                 <bufferAttribute
                     attach="attributes-position"
@@ -77,7 +94,7 @@ export default function Galaxy() {
             <boxGeometry />
             <meshStandardMaterial color={'skyBlue'} />
         </mesh> */}
-
+        <BlackPlane />
         <Particles />
     </>
 }
